@@ -1,0 +1,77 @@
+#!/usr/bin/env perl
+
+package Bio::ChadoAnnotationRemapper::Bin::ChadoRemap;
+
+# ABSTRACT: Takes in embl files and a chado database, and shifts the annotation in chado to match those in embl files
+
+# PODNAME: chado_remap
+
+=head1 SYNOPSIS
+
+Takes in embl files and a chado database, and shifts the annotation in chado to match those in embl files 
+   
+=cut
+
+
+BEGIN { unshift( @INC, '../lib' ) }
+BEGIN { unshift( @INC, './lib' ) }
+#BEGIN { unshift( @INC, '/software/pathogen/internal/prod/lib/' ) }
+
+use Getopt::Long;
+use Cwd 'abs_path';
+use Bio::ChadoAnnotationRemapper::Remapper;
+
+my ( $input_directory, $input_format, $database_url, $database_username, $database_password, $organism, $parent_feature_types, $srcfeature_suffix, $help );
+
+GetOptions(
+	'f|file=s'		        => \$input_directory,
+    'i|format=s'            => \$input_format,
+	'd|database=s'			=> \$database_url,
+	'u|db_user=s'           => \$database_username,
+	'p|db_password=s'	    => \$database_password,
+	'o|organism=s'	        => \$organism,
+	't|parent_types=s'	    => \$parent_feature_types,
+    's|suffix=s'            => \$srcfeature_suffix,
+    'h|help'                => \$help,
+);
+
+
+( ( defined $input_directory ) && ( defined $organism ) && !$help ) or die <<USAGE;
+Usage: chado_remap [options]
+	
+        -f|file          <input directory with embl files>
+        -i|format        <the format of input files, default embl (currently only embl files handled)>
+        -d|database      <database details in the form of host:port/database, default bigtest4>
+        -u|db_user       <database username>
+        -p|db_password   <database password>
+        -o|organism      <organism>
+        -t|parent_types  <types of the source features , default chromosome, mitochondrial_chromosome, apicoplast_chromosome>
+        -s|suffix        <temporary suffix to use when loading new assembly fasta files, default _new>
+        -h|help          <this message>
+        
+Takes in a directory of flat files (usually embl), a chado database and produces an sql file to shift chado annotation
+
+# outputs commands.sql to be piped into database and tsv files listing features that were not matches
+chado_remap -f my_dir -d path-omixed-db:5432/bigtest4 -u myusername -p mypassword -o Pyoelii 
+
+USAGE
+
+$input_directory = abs_path($input_directory);
+$input_format ||= 'EMBL';
+$database_url ||= 'path-omixed-db:5432/bigtest4';
+$parent_feature_types ||= 'chromosome, mitochondrial_chromosome, apicoplast_chromosome';
+$srcfeature_suffix ||= '_new';
+
+my $chado_remapper = Bio::ChadoAnnotationRemapper::Remapper->new(
+  input_directory      => $input_directory,
+  input_format         => $input_format,
+  database_url         => $database_url,
+  database_username    => $database_username,
+  database_password    => $database_password,
+  organism             => $organism,
+  parent_feature_types => $parent_feature_types,
+  srcfeature_suffix    => $srcfeature_suffix,
+);
+
+$chado_remapper->relocate_features();
+ 
