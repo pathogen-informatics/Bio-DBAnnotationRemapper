@@ -9,14 +9,14 @@ BEGIN { unshift( @INC, './lib' ) }
 BEGIN {
     use Test::Most;
     use Test::File::Contents;
-    use_ok('Bio::ChadoAnnotationRemapper::FlatFile::ReaderWriter');
+    use_ok('Bio::DBAnnotationRemapper::FlatFile::ReaderWriter');
 }
 
 my $obj;
 my $cwd = getcwd();
  
 
-ok($obj = Bio::ChadoAnnotationRemapper::FlatFile::ReaderWriter->new(
+ok($obj = Bio::DBAnnotationRemapper::FlatFile::ReaderWriter->new(
   input_directory   => $cwd.'/t/data/test_dir/',
 ),'Initialise object');
 

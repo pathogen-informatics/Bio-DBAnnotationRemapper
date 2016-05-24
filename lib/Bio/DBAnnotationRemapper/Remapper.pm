@@ -11,10 +11,11 @@ use Moose;
 use Bio::DBAnnotationRemapper::Database::ReaderWriter;
 use Bio::DBAnnotationRemapper::Database::SQLGenerator;
 use Bio::DBAnnotationRemapper::FlatFile::ReaderWriter;
+use Data::Dumper;
 
 
-has 'db_features'                  => ( is => 'rw', isa => 'HashRef[ArrayRef[Str]]' );
-has 'file_features'                => ( is => 'rw', isa => 'HashRef[ArrayRef[Str]]' );
+has 'db_features'                  => ( is => 'rw', isa => 'HashRef' );
+has 'file_features'                => ( is => 'rw', isa => 'HashRef' );
 
 has 'matched'                       => ( is => 'ro', isa => 'Str', default => 'features.matched.tsv' ); # intersection of features in database and flatfile (i.e. correctly relocated)
 has 'file_not_matched'              => ( is => 'ro', isa => 'Str', default => 'file.features.not.matched.tsv' ); # features in flat file not found in database
@@ -30,9 +31,9 @@ sub _build_previous_sys_ids {
     my ($self) = @_;
 
     my %prev_sys_ids;
-    foreach my $feature (keys $self->_file_features){
-        if ($self->_file_features->{$feature}->[6]) { # if prev sys id exists
-            $prev_sys_ids{$self->_file_features->{$feature}->[6]} = $feature;
+    foreach my $feature (keys $self->file_features){
+        if ($self->file_features->{$feature}->[6]) { # if prev sys id exists
+            $prev_sys_ids{$self->file_features->{$feature}->[6]} = $feature;
         }
     }
     return \%prev_sys_ids;
@@ -45,38 +46,38 @@ sub relocate_features {
 
     open (my $matched_fh, ">", $self->matched) or die "Could not open $self->matched";  
     open (my $file_not_matched_fh, ">", $self->file_not_matched) or die "Could not open $self->file_not_matched";
-    open (my $db_not_matched_fh, ">", $self->chado_not_matched) or die "Could not open $self->db_not_matched";
+    open (my $db_not_matched_fh, ">", $self->db_not_matched) or die "Could not open $self->db_not_matched";
     open (my $locations_fh, ">", $self->new_locations) or die "Could not open $self->new_locations"; 
     open (my $names_fh, ">", $self->new_names) or die "Could not open $self->new_names"; 
 
    # For every feature from the database, check if it needs to be relocated and/or renamed
     my %features_seen;
+
     foreach my $feature (keys $self->db_features){
 
         my ($match, $rename) = $self->_find_name_match($feature);
 
         if ($match){ 
-      #      print {$location_fh} $self->_chado_sql_generator->generate_sql_floc_update_stmt( $self->_chado_features->{$feature}->[7], $self->_file_features->{$match} ), "\n";
-            print {$locations_fh} $self->db_features->{$feature}->[7], join("\t", @$self->file_features->{$match}),"\n";
-            print {$matched_fh} "$feature\t$match\n"; 
+
+            my $arrayref = $self->file_features->{$match};
+            print {$locations_fh} $self->db_features->{$feature}->[7],"\t", join("\t", @$arrayref),"\n";
+            print {$matched_fh} "$feature\t$match\n"; #$feature was matched to $match
             $features_seen{$match} = 'seen';
-            my $feature_type = $self->_chado_features->{$feature}->[3];
+            my $feature_type = $self->db_features->{$feature}->[3];
 
             # add previous systematic ids (but only to genes)
             if($rename and ( $feature_type eq 'gene' or $feature_type eq 'pseudogene' )){
-                print {$names_fh} "$rename $feature\n";
-#                 print {$sql_fh} $self->_chado_sql_generator->generate_sql_feature_update_stmt( $rename, $feature ), "\n";
-#                 print {$sql_fh} $self->_chado_sql_generator->generate_sql_add_synonym_stmt( $feature ), "\n";
-#                 print {$sql_fh} $self->_chado_sql_generator->generate_sql_previous_sys_id_stmt( $feature, $rename ), "\n";
+                print {$names_fh} "$rename\t$feature\n";
             }
 
         }else{
-            print {$db_not_matched_fh} join("\t", $feature), "\n";
+            print {$db_not_matched_fh} $feature, "\n";
         }
     }
 
     # write out anything from the flat file that was not matched as these are likely to be new genes
-    foreach my $feature_still_not_matched (keys $self->_file_features){
+    foreach my $feature_still_not_matched (keys $self->file_features){
+
         if (! exists $features_seen{$feature_still_not_matched} ) {
             print {$file_not_matched_fh} "$feature_still_not_matched\n";
         }
@@ -85,12 +86,14 @@ sub relocate_features {
 
     # sort files and close file handles
     foreach ( $self->matched, $self->file_not_matched, $self->db_not_matched, $self->new_locations, $self->new_names ) {
-        system("sort $_ -o $_");
+        system("sort $_ -o $_") == 0 or warn "Could not sort $_";
     }
 
     foreach ($matched_fh, $file_not_matched_fh, $db_not_matched_fh, $locations_fh, $names_fh ) {
-        close $_;
+        close $_ or warn "Could not close $_";
     }
+
+
 }
 
 
@@ -105,19 +108,19 @@ sub _find_name_match {
   
     my $rename = 0;
 
-    if (exists $self->_file_features->{$name}) {
+    if (exists $self->file_features->{$name}) {
         return ($name, $rename);
     }
 
     my $stripped_name = $self->_strip_transcript_and_peptide_names($name);   
-    if (exists $self->_file_features->{$stripped_name}) {
+    if (exists $self->file_features->{$stripped_name}) {
         return ($stripped_name, $rename);
     }
     
     my $new_id = $self->_previous_sys_ids->{$stripped_name};
 
-    if ($new_id and (exists $self->_file_features->{$new_id}) and (not exists $self->_chado_features->{$new_id} )) { 
-        # We check if the new ID is already in chado because sometimes gene models are merged and can have the same name as one that already exists
+    if ($new_id and (exists $self->file_features->{$new_id}) and (not exists $self->db_features->{$new_id} )) { 
+        # We check if the new ID is already in the db because sometimes gene models are merged and can have the same name as one that already exists
         $rename = $self->_place_transcript_and_peptide_names($new_id, $name);
         return ($new_id, $rename);
     }

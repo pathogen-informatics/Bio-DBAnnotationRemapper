@@ -10,14 +10,14 @@ BEGIN { unshift( @INC, './lib' ) }
 BEGIN {
     use Test::Most;
     use Test::File::Contents;
-    use_ok('Bio::ChadoAnnotationRemapper::Chado::ReaderWriter');
+    use_ok('Bio::DBAnnotationRemapper::Database::ReaderWriter');
 }
 
 my $obj;
 my $cwd = getcwd();
  
 
-ok($obj = Bio::ChadoAnnotationRemapper::Chado::ReaderWriter->new(
+ok($obj = Bio::DBAnnotationRemapper::Database::ReaderWriter->new(
   organism   => 'Pyoelii',
   database_username => 'pathdb',
   database_password => 'LongJ!@n',

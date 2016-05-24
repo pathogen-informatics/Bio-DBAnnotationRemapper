@@ -1,4 +1,4 @@
-package Bio::ChadoAnnotationRemapper::Chado::ReaderWriter;
+package Bio::DBAnnotationRemapper::Database::ReaderWriter;
 
 # ABSTRACT: Extract features from a chado psql database with locations for a given organism
 
@@ -18,7 +18,7 @@ has 'database_username'             => ( is => 'ro', isa => 'Str',      required
 has 'database_password'             => ( is => 'ro', isa => 'Str',      required => 1);
 has 'organism'                      => ( is => 'ro', isa => 'Str',      required => 1);
 has 'parent_feature_types'           => ( is => 'ro', isa => 'Str',      default => 'chromosome, mitochondrial_chromosome, apicoplast_chromosome' ); 
-has 'output_file'                   => ( is => 'ro', isa => 'Str', default => 'chado.features.tsv' );
+has 'output_file'                   => ( is => 'ro', isa => 'Str', default => 'db.features.tsv' );
 has '_db_handle' => ( is => 'ro', lazy => 1, builder => '_build__db_handle' );
 
 

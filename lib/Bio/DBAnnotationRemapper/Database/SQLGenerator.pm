@@ -1,4 +1,4 @@
-package Bio::ChadoAnnotationRemapper::Chado::SQLGenerator;
+package Bio::DBAnnotationRemapper::Database::SQLGenerator;
 
 # ABSTRACT: Generate SQL specific to version of chado to update featureloc and add previous systematic IDs
 
@@ -21,17 +21,21 @@ sub run {
 
    open (my $sql_fh, ">", $self->sql_file) or die "Could not open $self->sql_file";  
 
-   print {$sql_fh} "BEGIN;";
+   print {$sql_fh} "BEGIN;\n";
+    
+   print "Locations file ".$self->new_locations."\n";
 
-   open (my $new_locs_fh, "<",$self->new_locations) or die "Could not open $self->new_locations";
+   open (my $new_locs_fh, "<", $self->new_locations) or die "Could not open $self->new_locations";
    for (<$new_locs_fh>) {
+        chomp;
         my @values = split(/\t/, $_);
-        print {$sql_fh} $self->_generate_sql_floc_update_stmt($values[0], $values[4], $values[5], $values[6], $values[1]);
+        print {$sql_fh} $self->_generate_sql_floc_update_stmt($values[0], $values[4], $values[5], $values[6], $values[1]), "\n";
    }
    close ($new_locs_fh);
 
    open (my $new_names_fh, "<",$self->new_names) or die "Could not open $self->new_names";
    for (<$new_names_fh>) {
+        chomp;
         my ($old, $new) = split(/\t/, $_);
         print {$sql_fh} $self->_generate_sql_feature_update_stmt( $new, $old ), "\n";
         print {$sql_fh} $self->_generate_sql_add_synonym_stmt( $old ), "\n";

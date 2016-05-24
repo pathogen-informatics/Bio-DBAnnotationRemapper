@@ -1,4 +1,4 @@
-package Bio::ChadoAnnotationRemapper::FlatFile::ReaderWriter;
+package Bio::DBAnnotationRemapper::FlatFile::ReaderWriter;
 
 # ABSTRACT: Read an EMBL/GFF file and out a list of features with coordinates
 
@@ -13,11 +13,10 @@ parent_ID feature_name feature_type start end strand previous_feature_name
 =cut
 
 use Moose;
-use Getopt::Long qw(GetOptionsFromArray);
-use Cwd;
 use Bio::SeqIO;
 use Bio::Location::SplitLocationI;
 use Data::Dumper;
+
 
 has 'input_directory'             => ( is => 'ro', isa => 'Str', required => 1 );
 has 'input_format'                => ( is => 'ro', isa => 'Str', default => 'EMBL');
@@ -116,6 +115,7 @@ sub extract_features {
             }
        }
     }
+
 
     close ($outfh);
     return \%all_features;

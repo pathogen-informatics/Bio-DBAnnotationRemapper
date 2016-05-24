@@ -13,6 +13,8 @@ use Moose;
 use Bio::DBAnnotationRemapper::Database::ReaderWriter;
 use Bio::DBAnnotationRemapper::Database::SQLGenerator;
 use Bio::DBAnnotationRemapper::FlatFile::ReaderWriter;
+use Bio::DBAnnotationRemapper::Remapper;
+use Data::Dumper;
 
 has 'input_directory'               => ( is => 'ro', isa => 'Str', required => 1 ); # directory of files
 has 'input_format'                  => ( is => 'ro', isa => 'Str', default => 'EMBL'); # only embl files supported at the moment TODO: support gff files
@@ -25,6 +27,8 @@ has 'srcfeature_suffix'             => ( is => 'ro', isa => 'Str', default => '_
 
 sub run {
 
+    my ($self) = @_;
+
     # 1. Extract the features from flat files
     my $file_obj = Bio::DBAnnotationRemapper::FlatFile::ReaderWriter->new(
                         input_directory   => $self->input_directory,
@@ -32,6 +36,8 @@ sub run {
     );
 
     my $file_features = $file_obj->extract_features;
+    print Dumper($file_features);
+
 
     # 2. Extract features from the database
     my $db_obj = Bio::DBAnnotationRemapper::Database::ReaderWriter->new(
@@ -43,6 +49,7 @@ sub run {
                     );
     my $db_features = $db_obj->extract_features;
 
+
     # 3. Remap the features in database based on flat files
     my $remapper_obj = Bio::DBAnnotationRemapper::Remapper->new(
                          db_features   => $db_features,
@@ -50,12 +57,15 @@ sub run {
     );
     $remapper_obj->relocate_features();
 
+
     # 4. Generate the SQL needed to update the database
     if(-e $remapper_obj->new_locations and -e $remapper_obj->new_names) {
+
         my $sql_generator = Bio::DBAnnotationRemapper::Database::SQLGenerator->new(
-                            updated_locations => $remapper_obj->new_locations,
-                            updated_names => $remapper_obj->new_names,
+                            new_locations => $remapper_obj->new_locations,
+                            new_names => $remapper_obj->new_names,
         );
+        $sql_generator->run();
     } else {
         
         die "Relocating features did not produce expected output files \n";
