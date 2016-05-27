@@ -48,16 +48,24 @@ Arguments:
 *Required*
 
 **input_directory**: Directory of embl files
+
 **organism**: Organism common name
+
 **database_url**: URL of database in the form of host:port/database, default bigtest4
+
 **database_username**: Database username
+
 **database_password**: Database password
+
 
 *Optional*
 
 **input_format**: Format of embl files (default embl)
+
 **parent_feature_types**: The type of parent features that the annotation is on (default, chromosomes (mitochondrial and apicoplast chromosomes too)
+
 **srcfeature_suffix**: In the chado pathogens database features should have unique names. This suffix is added to parent feature names so that they can be uniquely identified. 
+
 
 
 Output files:
@@ -68,12 +76,19 @@ Output files:
 The files below are useful if you want to track what features have/have not mapped over. 
 
 **file.features.tsv**: All features extracted from flat files
+
 **db.features.tsv**: All features extracted from database
+
 **file.features.not.matched.tsv**: Features in flat files that did not match anything in the database
+
 **db.features.not.matched.tsv**: Features in database that did not match anything in the flat files
+
 **features.matched.tsv**: Features that matched
+
 **new.names.tsv**: New gene names (old gene names will get put in as previous systematic IDs)
+
 **new.locations.tsv**: New locations for features in the database
+
 
 Commandline script:
 ----------------------
@@ -93,6 +108,8 @@ Contact
 -------
 
 Author: Nishadi De Silva
+
 Affiliation: Wellcome Trust Sanger Institute, Hinxton, UK
+
 Email: path-help@sanger.ac.uk
       

@@ -2,20 +2,18 @@
 
 package Bio::DBAnnotationRemapper::Bin::DBRemap;
 
-# ABSTRACT: Takes in embl files and a database connection url, and produces the SQL to shift the annotation in the database
+# ABSTRACT: Takes in embl files and a database connection url, and produces the SQL to shift the annotation in the database and add previous sys ids (based on embl files)
 
 # PODNAME: db_remap
 
 =head1 SYNOPSIS
-
-Takes in embl files and database details , and produces the SQL to shift the annotation in the database to match those in embl files 
-   
+  
 =cut
 
 
 BEGIN { unshift( @INC, '../lib' ) }
 BEGIN { unshift( @INC, './lib' ) }
-#BEGIN { unshift( @INC, '/software/pathogen/internal/prod/lib/' ) }
+BEGIN { unshift( @INC, '/software/pathogen/internal/prod/lib/' ) }
 
 use Getopt::Long;
 use Cwd 'abs_path';
@@ -37,7 +35,7 @@ GetOptions(
 
 
 ( ( defined $input_directory ) && ( defined $organism ) && !$help ) or die <<USAGE;
-Usage: chado_remap [options]
+Usage: db_remap [options]
 	
         -f|file          <input directory with annotation files (only embl supported at present)>
         -i|format        <the format of input files, default embl (currently only embl files handled)>
@@ -49,7 +47,7 @@ Usage: chado_remap [options]
         -s|suffix        <temporary suffix to use when loading new assembly fasta files, default _new>
         -h|help          <this message>
         
-Takes in a directory of flat files (usually embl), a chado database and produces an sql file to shift chado annotation
+Takes in a directory of flat files (usually embl), database connection details, an organism name and produces an sql file to shift the annotation in the database
 
 # outputs commands.sql to be piped into database and tsv files listing features that were/were not matched
 db_remap -f my_dir -d path-omixed-db:5432/bigtest4 -u myusername -p mypassword -o Pyoelii 

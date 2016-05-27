@@ -22,9 +22,7 @@ sub run {
    open (my $sql_fh, ">", $self->sql_file) or die "Could not open $self->sql_file";  
 
    print {$sql_fh} "BEGIN;\n";
-    
-   print "Locations file ".$self->new_locations."\n";
-
+ 
    open (my $new_locs_fh, "<", $self->new_locations) or die "Could not open $self->new_locations";
    for (<$new_locs_fh>) {
         chomp;

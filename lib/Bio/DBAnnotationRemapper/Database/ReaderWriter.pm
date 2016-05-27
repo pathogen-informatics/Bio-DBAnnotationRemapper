@@ -13,7 +13,7 @@ srcfeature.uniquename feature.uniquename feature.feature_id cvterm.name featurel
 use Moose;
 use DBI;
 
-has 'database_url'                  => ( is => 'ro', isa => 'Str',      default => 'path-live-db:5432/pathogens' );
+has 'database_url'                  => ( is => 'ro', isa => 'Str',      default => 'path-omixed-db:5432/bigtest4' );
 has 'database_username'             => ( is => 'ro', isa => 'Str',      required => 1);
 has 'database_password'             => ( is => 'ro', isa => 'Str',      required => 1);
 has 'organism'                      => ( is => 'ro', isa => 'Str',      required => 1);

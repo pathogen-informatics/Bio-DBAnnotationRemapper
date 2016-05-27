@@ -77,7 +77,7 @@ ok($obj = Bio::DBAnnotationRemapper::Remapper->new(
     file_features => \%test_file_data,
 ),'Initialise object');
 
-ok($obj->relocate_features, 'relocate features OK');
+ok($obj->relocate_features(), 'relocate features OK');
 
 foreach ($obj->matched, $obj->file_not_matched, $obj->db_not_matched, $obj->new_locations, $obj->new_names) {
 

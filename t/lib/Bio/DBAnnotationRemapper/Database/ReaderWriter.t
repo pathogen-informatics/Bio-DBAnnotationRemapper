@@ -20,7 +20,7 @@ my $cwd = getcwd();
 ok($obj = Bio::DBAnnotationRemapper::Database::ReaderWriter->new(
   organism   => 'Pyoelii',
   database_username => 'pathdb',
-  database_password => 'LongJ!@n',
+  database_password => '', # Change to read password from env variable
 ),'Initialise object');
 
 ok($obj->extract_features, 'extract features from a chado database');

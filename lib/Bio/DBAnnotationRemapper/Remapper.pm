@@ -90,7 +90,7 @@ sub relocate_features {
     }
 
     foreach ($matched_fh, $file_not_matched_fh, $db_not_matched_fh, $locations_fh, $names_fh ) {
-        close $_ or warn "Could not close $_";
+        close ($_) or warn "Could not close $_";
     }
 
 
